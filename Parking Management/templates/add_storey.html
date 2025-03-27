@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Storey</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="{{url_for('home')}}">Parking Management</a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                {% if user_role == 'admin' %}
+                <li class="nav-item">
+                    <a href="{{ url_for('add_storey') }}" class="nav-link">
+                        <i class="fas fa-building"></i> Add Storey
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if user_role == 'gatekeeper' %}
+                <li class="nav-item">
+                    <a href="{{ url_for('add_vehicle') }}" class="nav-link">
+                        <i class="fas fa-car"></i> Add Vehicle
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('exit_vehicle') }}" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i> Exit Vehicle
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('search_vehicle') }}" class="nav-link">
+                        <i class="fas fa-search"></i> Search Vehicle
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('display_storey') }}" class="nav-link">
+                        <i class="fas fa-th"></i> Display Storey
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <!-- Right-Aligned Logout Button -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2>Add Storey</h2>
+        <form action="{{ url_for('add_storey') }}" method="POST">
+            <div class="form-group">
+                <label for="rows">Rows</label>
+                <input type="number" id="rows" name="rows" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="columns">Columns</label>
+                <input type="number" id="columns" name="columns" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Storey</button>
+        </form>
+        <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to
+            Home</a>
+        <h3 class="mt-5">Existing Storeys</h3>
+        <div class="row">
+            {% for storey in storeys %}
+            <div class="col-md-4">
+                <div class="card p-4 mb-3">
+                    <h5>Storey ID: {{ storey.id }}</h5>
+                    <p>Rows: {{ storey.rows }}</p>
+                    <p>Columns: {{ storey.columns }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

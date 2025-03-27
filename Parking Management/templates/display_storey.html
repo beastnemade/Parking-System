@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Storey</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="{{url_for('home')}}">Parking Management</a>
+    
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                {% if user_role == 'admin' %}
+                <li class="nav-item">
+                    <a href="{{ url_for('add_storey') }}" class="nav-link">
+                        <i class="fas fa-building"></i> Add Storey
+                    </a>
+                </li>
+                {% endif %}
+    
+                {% if user_role == 'gatekeeper' %}
+                <li class="nav-item">
+                    <a href="{{ url_for('add_vehicle') }}" class="nav-link">
+                        <i class="fas fa-car"></i> Add Vehicle
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('exit_vehicle') }}" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i> Exit Vehicle
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('search_vehicle') }}" class="nav-link">
+                        <i class="fas fa-search"></i> Search Vehicle
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('display_storey') }}" class="nav-link">
+                        <i class="fas fa-th"></i> Display Storey
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+    
+            <!-- Right-Aligned Logout Button -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2>Storey Layout</h2>
+
+        {% if storeys %}
+        {% for storey in storeys %}
+        <div class="mb-5">
+            <h4>Storey ID: {{ storey.id }}</h4>
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>Slot</th>
+                        {% for col in range(storey.columns) %}
+                        <th>Column {{ col + 1 }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in range(storey.rows) %}
+                    <tr>
+                        <td>Row {{ row + 1 }}</td>
+                        {% for col in range(storey.columns) %}
+                        {% set slot = storey.slots[row][col] %}
+                        <td>
+                            <button class="btn btn-sm {% if slot %}btn-primary{% else %}btn-secondary{% endif %}"
+                                data-toggle="modal" data-target="#parkingModal" data-storey="{{ storey.id }}"
+                                data-row="{{ row + 1 }}" data-col="{{ col + 1 }}"
+                                data-vehicle="{{ vehicles[slot].number if slot else 'Empty' }}"
+                                data-parking-time="{{ vehicles[slot].parking_time if slot else 'N/A' }}"
+                                data-parking-id="{{ slot if slot else 'Empty' }}"
+                                data-cost="{{ vehicles[slot].cost if slot else 'N/A' }}">
+                                {{ slot if slot else "Empty" }}
+                            </button>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="alert alert-warning text-center mt-4">
+            <h4>No storeys added</h4>
+            <p>Ask the admin to configure parking storeys.</p>
+        </div>
+        {% endif %}
+        <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to Home</a>
+
+    </div>
+
+
+
+    <!-- Parking Details Modal -->
+    <div class="modal fade" id="parkingModal" tabindex="-1" aria-labelledby="parkingModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="parkingModalLabel">Parking Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Storey ID:</strong> <span id="modalStorey"></span></p>
+                    <p><strong>Row:</strong> <span id="modalRow"></span></p>
+                    <p><strong>Column:</strong> <span id="modalCol"></span></p>
+                    <p><strong>Vehicle Number:</strong> <span id="modalVehicle"></span></p>
+                    <p><strong>Parking ID:</strong> <span id="modalParkingID"></span></p>
+                    <p><strong>Parking Time:</strong> <span id="modalParkingTime"></span></p>
+                    <p><strong>Elapsed Time:</strong> <span id="modalElapsedTime"></span></p>
+                    <p><strong>Parking Cost:</strong> Rs. <span id="modalParkingCost"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('.btn[data-toggle="modal"]').on('click', function () {
+                var storey = $(this).data('storey');
+                var row = $(this).data('row');
+                var col = $(this).data('col');
+                var vehicle = $(this).data('vehicle');
+                var parkingTime = $(this).data('parking-time');
+                var parkingID = $(this).data('parking-id');
+                var cost = $(this).data('cost');
+
+                $('#modalStorey').text(storey);
+                $('#modalRow').text(row);
+                $('#modalCol').text(col);
+                $('#modalVehicle').text(vehicle);
+                $('#modalParkingID').text(parkingID);
+                $('#modalParkingTime').text(parkingTime);
+                $('#modalParkingCost').text(cost);
+
+                // Calculate elapsed time
+                if (parkingTime !== "N/A") {
+                    var parkedTime = new Date(parkingTime);
+                    var currentTime = new Date();
+                    var elapsedMinutes = Math.floor((currentTime - parkedTime) / 60000);
+                    var hours = Math.floor(elapsedMinutes / 60);
+                    var minutes = elapsedMinutes % 60;
+                    $('#modalElapsedTime').text(hours + " hrs " + minutes + " mins");
+                } else {
+                    $('#modalElapsedTime').text("N/A");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
